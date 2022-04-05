@@ -11,28 +11,16 @@ app.config["DEBUG"] = True
 def home():
     return "<div style='display: flex; align-items:center; justify-content: center; width: 100%; height: 100%;'><h1 style='font-size: 48px; color: #12f5ee'>Ruling app</h1></div>"
 
-@app.route('/api/ruler/normal', methods=['POST'])
-def normalRuler():
+@app.route('/api/ruler', methods=['POST'])
+def ruler():
     email = request.json['email']
     password = request.json['password']
 
     ruler = Ruler()
     try:
-        ruler.normalRuling(email, password)
+        ruler.startRuling(email, password)
         return "success"
     except:
         return "failed"
 
-@app.route('/api/ruler/godaddy', methods=['POST'])
-def godaddyRuler():
-    email = request.json['email']
-    password = request.json['password']
-
-    ruler = Ruler()
-    try:
-        ruler.godaddyRuling(email, password)
-        return "success"
-    except:
-        return "failed"
-
-app.run()
+app.run(host="0.0.0.0", port=int("80"))

