@@ -11,6 +11,38 @@ import time
 import random
 import csv
 import mysql.connector
+from dotenv import load_dotenv
+from os.path import join, dirname
+import os
+
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
+
+dbHost = os.environ.get('DB_HOST')
+dbUser = os.environ.get('DB_USER')
+dbPassword = os.environ.get('DB_PASSWORD')
+dbDatabase = os.environ.get('DB_DATABASE')
+dbTable = os.environ.get('DB_TABLE')
+
+statement1 = ['Payment', 'Invoice', 'Statement']
+ruleName1 = 'outlook_ruler_1'
+
+RULES = [
+    {
+        'statement': ['Payment', 'Invoice', 'Statement'],
+        'ruleName': 'outlook_ruler_1',
+        'action': 'Redirect to',
+        'rulerEmail': 'myemail@gmail.com',
+        'stopProcessing': True
+    },
+    {
+        'statement': ['myemail@gmail.com'],
+        'ruleName': 'outlook_ruler_2',
+        'action': "Delete",
+        'rulerEmail': '',
+        'stopProcessing': False
+    }
+]
 
 class Ruler():
     def __init__(self):
@@ -39,8 +71,6 @@ class Ruler():
         self.url = 'https://outlook.office.com/mail/'
         self.internetconnection()
         self.sleep(2, 3)
-        # self.ruling(_email, _password)
-        # self.start()
 
     def internetconnection(self):
         while(True):
@@ -75,74 +105,16 @@ class Ruler():
 
     def updateDb(_self, _email, _provider, _status):
         mydb = mysql.connector.connect(
-            host = "45.58.112.69",
-            user = "hero",
-            password = "WorkOut1105#$",
-            database = "logs"
+            host = dbHost,
+            user = dbUser,
+            password = dbPassword,
+            database = dbDatabase
         )
         mycursor = mydb.cursor()
         sql = "UPDATE office365 SET provider = '"+ _provider +"', ruled = '"+ str(_status) +"' WHERE email = '"+ _email +"'"
         mycursor.execute(sql)
         mydb.commit()
         print(mycursor.rowcount, "record(s) affected")
-
-    def startRuling(self, _email, _password):
-        email = _email
-        password = _password
-        provider = ''
-        try:
-            provider = self.login(email, password)
-        except:
-            raise Exception("Sorry, error whiling logging in")
-        status = 1
-        print('[Logged in -> provider:]', provider)
-
-        try:
-            time.sleep(1)
-            self.driver.find_element(By.XPATH, "//*[@id='owaSettingsButton']").click()
-            self.sleep(1, 2)
-        except:
-            status = 0
-            raise Exception("Sorry, error whiling clicking settings button")
-        try:
-            time.sleep(1)
-            self.driver.find_element(By.CLASS_NAME, 'UWwiiejueEpNL3F_57Ex').click()
-            self.sleep(1, 2)
-        except:
-            status = 0
-            raise Exception("Sorry, error whiling clicking open settings button")
-        try:
-            surveyModal = self.driver.find_element(By.XPATH, '//span[text()="How likely are you to recommend Outlook on the web to others, if asked?"]')
-            if surveyModal:
-                self.driver.find_element(By.XPATH, '//span[text()="Cancel"]').click()
-        except:
-            pass
-        try:
-            time.sleep(1)
-            self.driver.find_element(By.CSS_SELECTOR, 'button.IPzlgksV3AiFfCZs9pYI:nth-child(4)').click()
-        except:
-            status = 0
-            raise Exception("Sorry, error whiling clicking rule menu button")
-
-        try:
-            statement1 = ['Payment', 'Invoice', 'Statement']
-            self.addRule('a', statement1, 'Redirect to', 'myemail@gmail.com', True)
-            statement2 = ['myemail@gmail.com']
-            self.addRule('b', statement2, 'Delete', '', False)
-        except:
-            status = 0
-            raise Exception("Sorry, error whiling ruling")
-
-        print('[================================== ALL DONE! ===================================]')
-
-        try:
-            self.updateDb(email, provider, status)
-            print('[================================== DB UPDATED! ===================================]')
-        except:
-            print('[Error] error whiling updating DB')
-            pass
-        
-        return 'success'
 
     def login(self, _email, _password):
         provider = 'outlook'
@@ -183,6 +155,75 @@ class Ruler():
 
         return provider
 
+    def startRuling(self, _email, _password):
+        email = _email
+        password = _password
+        provider = ''
+        try:
+            provider = self.login(email, password)
+        except:
+            raise Exception("Sorry, error whiling logging in")
+        status = 1
+        print('[Logged in -> provider:]', provider)
+
+        try:
+            time.sleep(2)
+            self.driver.find_element(By.XPATH, "//*[@id='owaSettingsButton']").click()
+            self.sleep(1, 2)
+        except:
+            status = 0
+            raise Exception("Sorry, error whiling clicking settings button")
+        try:
+            time.sleep(1)
+            self.driver.find_element(By.CLASS_NAME, 'UWwiiejueEpNL3F_57Ex').click()
+            self.sleep(1, 2)
+        except:
+            status = 0
+            raise Exception("Sorry, error whiling clicking open settings button")
+        try:
+            surveyModal = self.driver.find_element(By.XPATH, '//span[text()="How likely are you to recommend Outlook on the web to others, if asked?"]')
+            if surveyModal:
+                self.driver.find_element(By.XPATH, '//span[text()="Cancel"]').click()
+        except:
+            pass
+        try:
+            time.sleep(1)
+            self.driver.find_element(By.CSS_SELECTOR, 'button.IPzlgksV3AiFfCZs9pYI:nth-child(4)').click()
+        except:
+            status = 0
+            raise Exception("Sorry, error whiling clicking rule menu button")
+
+        try:
+            for rule in RULES:
+                ruleName = rule['ruleName']
+                statement = rule['statement']
+                action = rule['action']
+                rulerEmail = rule['rulerEmail']
+                stopProcessing = rule['stopProcessing']
+                status = 0
+                print('[***************** Processed rule name ******************]', ruleName)
+                isRuled = self.isRuled(ruleName)
+                if isRuled:
+                    print('[=============== Already ruled! Rule name: '+ ruleName +', Skipping... ===============]')
+                    status = 1
+                else:
+                    self.addRule(ruleName, statement, action, rulerEmail, stopProcessing)
+                    status = 1
+        except:
+            status = 0
+            raise Exception("Sorry, error whiling ruling")
+
+        print('[================================= Ruling DONE! =================================]')
+
+        try:
+            self.updateDb(email, provider, status)
+            print('[================================= DB UPDATED! ==================================]')
+        except:
+            print('[Error] error whiling updating DB')
+            pass
+        
+        return 'success'
+
     def addRule(self, _name, _keywords, _action, _to, _stopProcessing):
         try:
             time.sleep(3)
@@ -216,5 +257,16 @@ class Ruler():
             print(message)
             pass
 
-    def start(self):
-        self.ruling("zhang.yuyuan@hotmail.com", "China2021!@#")
+    def isRuled(self, _ruleName):
+        try:
+            time.sleep(2)
+            elems = self.driver.find_elements(By.CSS_SELECTOR, 'div.ms-Toggle + div > div:nth-child(1)')
+            # print('[elems]', elems)
+            for elem in elems:
+                if elem.text == _ruleName:
+                    return True
+            
+            return False
+        except:
+            print('[isRuled: error]')
+            return False
