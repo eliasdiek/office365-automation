@@ -24,9 +24,6 @@ dbPassword = os.environ.get('DB_PASSWORD')
 dbDatabase = os.environ.get('DB_DATABASE')
 dbTable = os.environ.get('DB_TABLE')
 
-statement1 = ['Payment', 'Invoice', 'Statement']
-ruleName1 = 'outlook_ruler_1'
-
 RULES = [
     {
         'statement': ['Payment', 'Invoice', 'Statement'],
