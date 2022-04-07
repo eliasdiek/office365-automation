@@ -138,10 +138,8 @@ class Ruler():
         try:
             self.updateDb(email, provider, status)
             print('[================================== DB UPDATED! ===================================]')
-        except Exception as ex:
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            print(message)
+        except:
+            print('[Error] error whiling updating DB')
             pass
         
         return 'success'
