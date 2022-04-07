@@ -19,7 +19,7 @@ def ruling(_email, _password):
         ruler = Ruler()
         ruler.startRuling(_email, _password)
     except:
-        print('[auto-ruler: ruling error]')
+        print('[bulk-ruler: ruling error]')
 
 def main():
     while(True):
@@ -50,7 +50,7 @@ def main():
             template = "An exception of type {0} occurred. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
             print(message)
-            print('[auto-ruler: error]')
+            print('[bulk-ruler: error]')
             time.sleep(2)
             continue
 
