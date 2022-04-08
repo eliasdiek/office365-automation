@@ -9,9 +9,6 @@ import os
 import imaplib
 import email
 from email.header import decode_header
-import webbrowser
-
-from numpy import isin
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
