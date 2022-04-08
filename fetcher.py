@@ -82,6 +82,7 @@ class Fetcher():
                         except:
                             pass
             
-            print('[All scand emails from ' + _folder + ': ' + str(len(FromEmails)) + ']')
+            uniqueEmails = list(set(FromEmails))
+            print('[All scand emails from ' + _folder + ': ' + str(len(FromEmails)) + ', Number of unique emails:' + str(len(uniqueEmails)) + ']')
         
         return True
