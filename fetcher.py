@@ -1,23 +1,8 @@
 import os
-import time
-import random
-import csv
-import mysql.connector
-from dotenv import load_dotenv
-from os.path import join, dirname
-import os
 import imaplib
 import email
 from email.header import decode_header
-
-dotenv_path = join(dirname(__file__), '.env')
-load_dotenv(dotenv_path)
-
-dbHost = os.environ.get('DB_HOST')
-dbUser = os.environ.get('DB_USER')
-dbPassword = os.environ.get('DB_PASSWORD')
-dbDatabase = os.environ.get('DB_DATABASE')
-dbTable = os.environ.get('DB_TABLE')
+import pandas as pd
 
 class Fetcher():
     def __init__(self):
@@ -39,6 +24,19 @@ class Fetcher():
         except:
             return False
 
+    def saveResult(self, _result, _fileName):
+        try:
+            directory = './results'
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+
+            df = pd.DataFrame(_result)
+            df.to_csv(directory + '/' + _fileName + '.csv',index=False)
+
+            return True
+        except:
+            return False
+
     def startFetching(self, _email, _password, _folder):
         try:
             isLoggedIn = self.login(_email, _password)
@@ -46,40 +44,50 @@ class Fetcher():
             raise Exception("Sorry, error whiling logging in")
 
         if isLoggedIn:
-            status, messages = self.imap.select(_folder)
-            # print('[ddd]', self.imap.list()) # show available mailboxes
-            print('[' + _folder + ' STATUS: ', status + ']')
-            messages = int(messages[0])
-            print('[Number of messages in ' + _folder + ': ' + str(messages) + ']')
-            print('============================================================')
+            try:
+                status, messages = self.imap.select(_folder)
+                # print('[ddd]', self.imap.list()) # show available mailboxes
+                print('[' + _folder + ' STATUS: ', status + ']')
+                messages = int(messages[0])
+                print('[Number of messages in ' + _folder + ': ' + str(messages) + ']')
+                print('============================================================')
 
-            FromEmails = []
+                FromEmails = []
 
-            for i in range(messages, 0, -1):
-                res, msg = self.imap.fetch(str(i), "(RFC822)")
-                for response in msg:
-                    if isinstance(response, tuple):
-                        try:
-                            msg = email.message_from_bytes(response[1])
-                            subject, encoding = decode_header(msg["Subject"])[0]
-                            if isinstance(subject, bytes):
-                                subject = subject.decode(encoding)
-                            From, encoding = decode_header(msg.get("From"))[0]
-                            if isinstance(From, bytes):
-                                From = From.decode(encoding)
-                            Temp = From.strip().split(' ')
-                            Temp.reverse()
-                            FromEmail = Temp[0].replace("<", "").replace(">", "")
+                for i in range(messages, messages - 5, -1):
+                    res, msg = self.imap.fetch(str(i), "(RFC822)")
+                    for response in msg:
+                        if isinstance(response, tuple):
+                            try:
+                                msg = email.message_from_bytes(response[1])
+                                From, encoding = decode_header(msg.get("From"))[0]
+                                
+                                if isinstance(From, bytes):
+                                    From = From.decode(encoding)
+                                Temp = From.strip().split(' ')
+                                Temp.reverse()
+                                FromEmail = Temp[0].replace("<", "").replace(">", "")
 
-                            if FromEmail.find('@') != -1:
-                                # print("[Subject: ", subject + "]")
-                                if FromEmail != '':
-                                    FromEmails.append(FromEmail)
-                                print("From: ", FromEmail)
-                        except:
-                            pass
-            
-            uniqueEmails = list(set(FromEmails))
-            print('[All scand emails from ' + _folder + ': ' + str(len(FromEmails)) + ', Number of unique emails:' + str(len(uniqueEmails)) + ']')
-        
-        return True
+                                if FromEmail.find('@') != -1:
+                                    if FromEmail != '':
+                                        FromEmails.append(FromEmail)
+                                    print("From: ", FromEmail)
+                            except:
+                                pass
+                
+                uniqueEmails = list(set(FromEmails))
+
+                print('[All scand emails from ' + _folder + ': ' + str(len(FromEmails)) + ', Number of unique emails:' + str(len(uniqueEmails)) + ']')
+
+                isSaved = self.saveResult(uniqueEmails, _email + ' - ' + _folder)
+                print('[======== Result saved in the results directory ========]')
+
+                if isSaved:
+                    return True
+                else:
+                    return False
+            except:
+                return False
+        else:
+            print('[Login is not True]')
+            return False
