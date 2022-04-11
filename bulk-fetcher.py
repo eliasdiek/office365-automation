@@ -51,7 +51,7 @@ def updateDb(_email, _status):
     sql = "UPDATE office365 SET fetched = '"+ str(_status) +"' WHERE email = '"+ _email +"'"
     mycursor.execute(sql)
     mydb.commit()
-    print("DB updated, ", mycursor.rowcount, "record(s) affected")
+    print("[DB updated, ", mycursor.rowcount, "record(s) affected]")
 
 def main():
     while(True):
@@ -59,7 +59,7 @@ def main():
             result = getData()
 
             if len(result) > 0:
-                print('[====================== ' + str(len(result)) + ' record(s) found, fetching start... ======================]')
+                print('[===================== ' + str(len(result)) + ' record(s) found, fetching start... =====================]')
                 for item in result:
                     email = item[1]
                     password = item[2]
@@ -76,14 +76,12 @@ def main():
             else:
                 print('[=============================== No record found ================================]')
                 time.sleep(5)
-                continue
         except Exception as ex:
             template = "An exception of type {0} occurred. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
             print(message)
             print('[bulk-fetcher: error]')
             time.sleep(2)
-            continue
 
 if __name__ == '__main__':
     main()
