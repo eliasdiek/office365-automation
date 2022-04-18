@@ -55,7 +55,7 @@ class myThread(threading.Thread):
             database = dbDatabase
         )
         mycursor = mydb.cursor()
-        sql = "SELECT * from " + dbTable +" where fetched = '0' AND fetching = '0'"
+        sql = "SELECT * FROM " + dbTable +" WHERE fetched = '0' AND fetching = '0'"
         mycursor.execute(sql)
         result = mycursor.fetchone()
 
@@ -69,7 +69,7 @@ class myThread(threading.Thread):
             database = dbDatabase
         )
         mycursor = mydb.cursor()
-        sql = "UPDATE office365 SET '" + _field +"' = '"+ str(_status) +"' WHERE email = '"+ _email +"'"
+        sql = "UPDATE office365 SET "+ _field +" = '"+ str(_status) +"' WHERE email = '"+ _email +"'"
         mycursor.execute(sql)
         mydb.commit()
         print("[DB updated, ", mycursor.rowcount, "record(s) affected]")
@@ -80,8 +80,8 @@ class myThread(threading.Thread):
             try:
                 result = self.getData()
 
-                if len(result) > 0:
-                    print('[===================== ' + str(len(result)) + ' record(s) found, fetching start... =====================]')
+                if result:
+                    print('[===================== Fetching start on 1 record... =====================]')
 
                     email = result[1]
                     password = result[2]

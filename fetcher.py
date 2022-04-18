@@ -6,6 +6,9 @@ import pandas as pd
 
 excludeList = [
     "gmail.com",
+    "google.com",
+    "ebay.com",
+    "amazon.com",
     "outlook.com",
     "hotmail.com",
     "yahoo.com",
