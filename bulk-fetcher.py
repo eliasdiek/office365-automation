@@ -83,7 +83,7 @@ class myThread(threading.Thread):
                 result = self.getData()
 
                 if result:
-                    print('[===================== Fetching start on 1 record... =====================]')
+                    print('[===================== '+ threadName +' - Fetching start on 1 record... =====================]')
 
                     email = result[1]
                     password = result[2]
@@ -112,7 +112,7 @@ class myThread(threading.Thread):
 
 threads = []
 for i in range(TotalNumberOfThreads):
-    threads.append(myThread(i, "Thread-" + i, 3 * i))
+    threads.append(myThread(i, "EMAIL_FETCHING_THREAD_" + i, 3 * i))
 
 for thread in threads:
     thread.start()
