@@ -4,6 +4,7 @@ import time
 from dotenv import load_dotenv
 from os.path import join, dirname
 import os
+import pandas as pd
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -14,7 +15,16 @@ dbPassword = os.environ.get('DB_PASSWORD')
 dbDatabase = os.environ.get('DB_DATABASE')
 dbTable = os.environ.get('DB_TABLE')
 
-FOLDERS = ["INBOX", "\"Sent Items\""]
+FOLDERS = [
+    {
+        "key": "INBOX",
+        "label": "inbox"
+    },
+    {
+        "key": "\"Sent Items\"",
+        "label": "sent"
+    }
+]
 
 def fetching(_email, _password, _folder):
     try:
@@ -53,7 +63,8 @@ def updateDb(_email, _status):
     mydb.commit()
     print("[DB updated, ", mycursor.rowcount, "record(s) affected]")
 
-def main():
+def main(_delay):
+    time.sleep(_delay)
     while(True):
         try:
             result = getData()
@@ -67,6 +78,7 @@ def main():
 
                     for folder in FOLDERS:
                         isFetched = fetching(email, password, folder)
+                        print('[isFetched]', isFetched)
                         if isFetched:
                             status = 1
                         else:
@@ -83,5 +95,17 @@ def main():
             print('[bulk-fetcher: error]')
             time.sleep(2)
 
+def test(_email, _password):
+    try:
+        isFetched = fetching(_email, _password, FOLDERS[0])
+    except Exception as ex:
+        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        message = template.format(type(ex).__name__, ex.args)
+        print(message)
+        pass
+
 if __name__ == '__main__':
     main()
+    # test("zhang.yuyuan@hotmail.com", "China2021!@#")
+    # for folder in FOLDERS:
+    #     saveResult(['test@test.com', 'test2@test.com'], "test@example.com - " + folder['label'])
