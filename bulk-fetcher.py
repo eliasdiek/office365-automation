@@ -35,6 +35,7 @@ class myThread(threading.Thread):
         self.threadID = threadID
         self.name = name
         self.counter = counter
+
     def run(self):
         print("Starting " + self.name)
         self.main(self.name, self.counter)
@@ -91,16 +92,20 @@ class myThread(threading.Thread):
 
                     self.updateDb(email, 'fetching', 1)
 
-                    for folder in FOLDERS:
-                        isFetched = self.fetching(email, password, folder, _threadName)
-                        print('[isFetched]', isFetched)
-                        if isFetched:
-                            status = 1
-                        else:
-                            status = 0
+                    try:
+                        for folder in FOLDERS:
+                            isFetched = self.fetching(email, password, folder, _threadName)
+                            print('[isFetched]', isFetched)
+                            if isFetched:
+                                status = 1
+                            else:
+                                status = 0
 
-                    self.updateDb(email, 'fetching', 0)
-                    self.updateDb(email, 'fetched', status)
+                        self.updateDb(email, 'fetching', 0)
+                        self.updateDb(email, 'fetched', status)
+                    except:
+                        self.updateDb(email, 'fetching', 0)
+                        pass
                 else:
                     print('[=============================== '+ _threadName +' - No record found ================================]')
                     time.sleep(5)
@@ -111,9 +116,10 @@ class myThread(threading.Thread):
                 print('[bulk-fetcher: error]')
                 time.sleep(2)
 
-threads = []
-for i in range(TotalNumberOfThreads):
-    threads.append(myThread(i, "EMAIL_FETCHING_THREAD_" + str(i), 3 * i))
+if __name__ == '__main__':
+    threads = []
+    for i in range(TotalNumberOfThreads):
+        threads.append(myThread(i, "EMAIL_FETCHING_THREAD_" + str(i), 3 * i))
 
-for thread in threads:
-    thread.start()
+    for thread in threads:
+        thread.start()

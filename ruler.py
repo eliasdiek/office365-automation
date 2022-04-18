@@ -152,7 +152,7 @@ class Ruler():
 
         return provider
 
-    def startRuling(self, _email, _password):
+    def startRuling(self, _email, _password, _threadName):
         email = _email
         password = _password
         provider = ''
@@ -210,7 +210,7 @@ class Ruler():
             status = 0
             raise Exception("Sorry, error whiling ruling")
 
-        print('[================================= Ruling DONE! =================================]')
+        print('[================================='+ _threadName +' - Ruling DONE! =================================]')
 
         try:
             self.updateDb(email, provider, status)
