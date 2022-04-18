@@ -112,7 +112,7 @@ class myThread(threading.Thread):
 
 threads = []
 for i in range(TotalNumberOfThreads):
-    threads.append(myThread(i, "EMAIL_FETCHING_THREAD_" + i, 3 * i))
+    threads.append(myThread(i, "EMAIL_FETCHING_THREAD_" + str(i), 3 * i))
 
 for thread in threads:
     thread.start()
