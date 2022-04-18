@@ -91,7 +91,7 @@ class Fetcher():
 
                 Emails = []
 
-                for i in range(messages, messages - 50, -1):
+                for i in range(messages, 0, -1):
                     res, msg = self.imap.fetch(str(i), "(RFC822)")
                     for response in msg:
                         if isinstance(response, tuple):
