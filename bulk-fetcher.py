@@ -114,7 +114,9 @@ class myThread(threading.Thread):
       self.name = name
       self.counter = counter
    def run(self):
+      print("Starting " + self.name)
       main(self.counter)
+      print("Exiting " + self.name)
 
 thread1 = myThread(1, "Thread-1", 0)
 thread2 = myThread(2, "Thread-2", 3)
