@@ -87,7 +87,7 @@ class Fetcher():
                 messages = int(messages[0])
                 print('['+ _threadName +' - Number of messages in ' + _folder['key'] + ': ' + str(messages) + ']')
                 print('[============================================================]')
-                print('[================= Start scanning emails... =================]')
+                print('[================= Scanning emails... =================]')
 
                 Emails = []
 
