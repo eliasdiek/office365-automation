@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from os.path import join, dirname
 import os
 import pandas as pd
-import thread
+import threading
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -107,13 +107,14 @@ def test(_email, _password):
         print(message)
         pass
 
-if __name__ == '__main__':
-    try:
-        thread.start_new_thread( main, (0) )
-        thread.start_new_thread( main, (3) )
-    except:
-        print("[Error: unable to start thread]")
+class myThread(threading.Thread):
+   def __init__(self, threadID, name, counter):
+      threading.Thread.__init__(self)
+      self.threadID = threadID
+      self.name = name
+      self.counter = counter
+   def run(self):
+      main(self.counter)
 
-    # test("zhang.yuyuan@hotmail.com", "China2021!@#")
-    # for folder in FOLDERS:
-    #     saveResult(['test@test.com', 'test2@test.com'], "test@example.com - " + folder['label'])
+thread1 = myThread(1, "Thread-1", 0)
+thread2 = myThread(2, "Thread-2", 3)
