@@ -38,7 +38,6 @@ class myThread(threading.Thread):
     def run(self):
         print("Starting " + self.name)
         self.main(self.name, self.counter)
-        print("Exiting " + self.name)
 
     def fetching(self, _email, _password, _folder, _threadName):
         try:
