@@ -62,7 +62,7 @@ class Fetcher():
             if Email.find('@') != -1:
                 domain = Email.split('@')[1]
                 if Email != '' and domain not in excludeList:
-                    print("" + _who + ": ", Email)
+                    # print("" + _who + ": ", Email)
                     return Email
                 else:
                     return ''

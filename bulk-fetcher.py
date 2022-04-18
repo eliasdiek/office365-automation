@@ -26,6 +26,8 @@ FOLDERS = [
         "label": "sent"
     }
 ]
+
+TotalNumberOfThreads = 5
 class myThread(threading.Thread):
     def __init__(self, threadID, name, counter):
         threading.Thread.__init__(self)
@@ -34,7 +36,7 @@ class myThread(threading.Thread):
         self.counter = counter
     def run(self):
         print("Starting " + self.name)
-        self.main(self.counter)
+        self.main(self.name, self.counter)
         print("Exiting " + self.name)
 
     def fetching(self, _email, _password, _folder):
@@ -74,7 +76,7 @@ class myThread(threading.Thread):
         mydb.commit()
         print("[DB updated, ", mycursor.rowcount, "record(s) affected]")
 
-    def main(self, _delay):
+    def main(self, threadName, _delay):
         time.sleep(_delay)
         while(True):
             try:
@@ -108,8 +110,9 @@ class myThread(threading.Thread):
                 print('[bulk-fetcher: error]')
                 time.sleep(2)
 
-thread1 = myThread(1, "Thread-1", 0)
-thread2 = myThread(2, "Thread-2", 3)
+threads = []
+for i in range(TotalNumberOfThreads):
+    threads.append(myThread(i, "Thread-" + i, 3 * i))
 
-thread1.start()
-thread2.start()
+for thread in threads:
+    thread.start()
