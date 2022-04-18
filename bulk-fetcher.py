@@ -99,6 +99,7 @@ class myThread(threading.Thread):
                         else:
                             status = 0
 
+                    self.updateDb(email, 'fetching', 0)
                     self.updateDb(email, 'fetched', status)
                 else:
                     print('[=============================== '+ _threadName +' - No record found ================================]')
