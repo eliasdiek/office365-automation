@@ -74,7 +74,7 @@ class Fetcher():
         except:
             return ''
 
-    def startFetching(self, _email, _password, _folder):
+    def startFetching(self, _email, _password, _folder, _threadName):
         try:
             isLoggedIn = self.login(_email, _password)
         except:
@@ -85,7 +85,7 @@ class Fetcher():
                 # print('[ddd]', self.imap.list()) # show available mailboxes
                 print('[' + _folder['key'] + ' STATUS: ', status + ']')
                 messages = int(messages[0])
-                print('[Number of messages in ' + _folder['key'] + ': ' + str(messages) + ']')
+                print('['+ _threadName +' - Number of messages in ' + _folder['key'] + ': ' + str(messages) + ']')
                 print('============================================================')
 
                 Emails = []
@@ -113,10 +113,10 @@ class Fetcher():
                 
                 uniqueEmails = list(set(Emails))
 
-                print('[All scand emails from ' + _folder['key'] + ': ' + str(len(Emails)) + ', Number of unique emails:' + str(len(uniqueEmails)) + ']')
+                print('['+ _threadName +' - All scand emails from ' + _folder['key'] + ': ' + str(len(Emails)) + ', Number of unique emails:' + str(len(uniqueEmails)) + ']')
 
                 isSaved = self.saveResult(uniqueEmails, _email + ' - ' + _folder['label'])
-                print('[======== Result saved in the results directory ========]')
+                print('[======== '+ _threadName +' - Result saved in the results directory ========]')
 
                 if isSaved:
                     return True

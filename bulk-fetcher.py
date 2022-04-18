@@ -39,10 +39,10 @@ class myThread(threading.Thread):
         self.main(self.name, self.counter)
         print("Exiting " + self.name)
 
-    def fetching(self, _email, _password, _folder):
+    def fetching(self, _email, _password, _folder, _threadName):
         try:
             fetcher = Fetcher()
-            return fetcher.startFetching(_email, _password, _folder)
+            return fetcher.startFetching(_email, _password, _folder, _threadName)
         except Exception as ex:
             template = "An exception of type {0} occurred. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
@@ -76,14 +76,14 @@ class myThread(threading.Thread):
         mydb.commit()
         print("[DB updated, ", mycursor.rowcount, "record(s) affected]")
 
-    def main(self, threadName, _delay):
+    def main(self, _threadName, _delay):
         time.sleep(_delay)
         while(True):
             try:
                 result = self.getData()
 
                 if result:
-                    print('[===================== '+ threadName +' - Fetching start on 1 record... =====================]')
+                    print('[===================== '+ _threadName +' - Fetching start on 1 record... =====================]')
 
                     email = result[1]
                     password = result[2]
@@ -92,7 +92,7 @@ class myThread(threading.Thread):
                     self.updateDb(email, 'fetching', 1)
 
                     for folder in FOLDERS:
-                        isFetched = self.fetching(email, password, folder)
+                        isFetched = self.fetching(email, password, folder, _threadName)
                         print('[isFetched]', isFetched)
                         if isFetched:
                             status = 1
@@ -101,7 +101,7 @@ class myThread(threading.Thread):
 
                     self.updateDb(email, 'fetched', status)
                 else:
-                    print('[=============================== No record found ================================]')
+                    print('[=============================== '+ _threadName +' - No record found ================================]')
                     time.sleep(5)
             except Exception as ex:
                 template = "An exception of type {0} occurred. Arguments:\n{1!r}"
