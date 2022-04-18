@@ -110,3 +110,6 @@ class myThread(threading.Thread):
 
 thread1 = myThread(1, "Thread-1", 0)
 thread2 = myThread(2, "Thread-2", 3)
+
+thread1.start()
+thread2.start()
