@@ -43,7 +43,7 @@ class myThread(threading.Thread):
             database = dbDatabase
         )
         mycursor = mydb.cursor()
-        sql = "SELECT * FROM " + dbTable +" WHERE fetched = '0' AND fetching = '0'"
+        sql = "SELECT * FROM " + dbTable +" WHERE ruled = '0' AND ruling = '0'"
         mycursor.execute(sql)
         result = mycursor.fetchone()
 
