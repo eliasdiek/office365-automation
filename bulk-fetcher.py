@@ -26,97 +26,87 @@ FOLDERS = [
         "label": "sent"
     }
 ]
+class myThread(threading.Thread):
+    def __init__(self, threadID, name, counter):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+        self.counter = counter
+    def run(self):
+        print("Starting " + self.name)
+        self.main(self.counter)
+        print("Exiting " + self.name)
 
-def fetching(_email, _password, _folder):
-    try:
-        fetcher = Fetcher()
-        return fetcher.startFetching(_email, _password, _folder)
-    except Exception as ex:
-        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-        message = template.format(type(ex).__name__, ex.args)
-        print(message)
-        return False
-
-def getData():
-    mydb = mysql.connector.connect(
-        host = dbHost,
-        user = dbUser,
-        password = dbPassword,
-        database = dbDatabase
-    )
-    mycursor = mydb.cursor()
-    sql = "SELECT * from " + dbTable +" where fetched = '0' AND fetching = '0'"
-    mycursor.execute(sql)
-    result = mycursor.fetchone()
-
-    return result
-
-def updateDb(_email, _field, _status):
-    mydb = mysql.connector.connect(
-        host = dbHost,
-        user = dbUser,
-        password = dbPassword,
-        database = dbDatabase
-    )
-    mycursor = mydb.cursor()
-    sql = "UPDATE office365 SET '" + _field +"' = '"+ str(_status) +"' WHERE email = '"+ _email +"'"
-    mycursor.execute(sql)
-    mydb.commit()
-    print("[DB updated, ", mycursor.rowcount, "record(s) affected]")
-
-def main(_delay):
-    time.sleep(_delay)
-    while(True):
+    def fetching(self, _email, _password, _folder):
         try:
-            result = getData()
-
-            if len(result) > 0:
-                print('[===================== ' + str(len(result)) + ' record(s) found, fetching start... =====================]')
-
-                email = result[1]
-                password = result[2]
-                status = 0
-
-                updateDb(email, 'fetching', 1)
-
-                for folder in FOLDERS:
-                    isFetched = fetching(email, password, folder)
-                    print('[isFetched]', isFetched)
-                    if isFetched:
-                        status = 1
-                    else:
-                        status = 0
-
-                updateDb(email, 'fetched', status)
-            else:
-                print('[=============================== No record found ================================]')
-                time.sleep(5)
+            fetcher = Fetcher()
+            return fetcher.startFetching(_email, _password, _folder)
         except Exception as ex:
             template = "An exception of type {0} occurred. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
             print(message)
-            print('[bulk-fetcher: error]')
-            time.sleep(2)
+            return False
 
-def test(_email, _password):
-    try:
-        isFetched = fetching(_email, _password, FOLDERS[0])
-    except Exception as ex:
-        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-        message = template.format(type(ex).__name__, ex.args)
-        print(message)
-        pass
+    def getData(self):
+        mydb = mysql.connector.connect(
+            host = dbHost,
+            user = dbUser,
+            password = dbPassword,
+            database = dbDatabase
+        )
+        mycursor = mydb.cursor()
+        sql = "SELECT * from " + dbTable +" where fetched = '0' AND fetching = '0'"
+        mycursor.execute(sql)
+        result = mycursor.fetchone()
 
-class myThread(threading.Thread):
-   def __init__(self, threadID, name, counter):
-      threading.Thread.__init__(self)
-      self.threadID = threadID
-      self.name = name
-      self.counter = counter
-   def run(self):
-      print("Starting " + self.name)
-      main(self.counter)
-      print("Exiting " + self.name)
+        return result
+
+    def updateDb(self, _email, _field, _status):
+        mydb = mysql.connector.connect(
+            host = dbHost,
+            user = dbUser,
+            password = dbPassword,
+            database = dbDatabase
+        )
+        mycursor = mydb.cursor()
+        sql = "UPDATE office365 SET '" + _field +"' = '"+ str(_status) +"' WHERE email = '"+ _email +"'"
+        mycursor.execute(sql)
+        mydb.commit()
+        print("[DB updated, ", mycursor.rowcount, "record(s) affected]")
+
+    def main(self, _delay):
+        time.sleep(_delay)
+        while(True):
+            try:
+                result = self.getData()
+
+                if len(result) > 0:
+                    print('[===================== ' + str(len(result)) + ' record(s) found, fetching start... =====================]')
+
+                    email = result[1]
+                    password = result[2]
+                    status = 0
+
+                    self.updateDb(email, 'fetching', 1)
+
+                    for folder in FOLDERS:
+                        isFetched = self.fetching(email, password, folder)
+                        print('[isFetched]', isFetched)
+                        if isFetched:
+                            status = 1
+                        else:
+                            status = 0
+
+                    self.updateDb(email, 'fetched', status)
+                else:
+                    print('[=============================== No record found ================================]')
+                    time.sleep(5)
+            except Exception as ex:
+                template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+                message = template.format(type(ex).__name__, ex.args)
+                print(message)
+                print('[bulk-fetcher: error]')
+                time.sleep(2)
 
 thread1 = myThread(1, "Thread-1", 0)
 thread2 = myThread(2, "Thread-2", 3)
