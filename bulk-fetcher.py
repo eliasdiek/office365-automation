@@ -47,7 +47,7 @@ def getData():
     mycursor = mydb.cursor()
     sql = "SELECT * from " + dbTable +" where fetched = '0' AND fetching = '0'"
     mycursor.execute(sql)
-    result = mycursor.fetchall()
+    result = mycursor.fetchone()
 
     return result
 
@@ -72,22 +72,22 @@ def main(_delay):
 
             if len(result) > 0:
                 print('[===================== ' + str(len(result)) + ' record(s) found, fetching start... =====================]')
-                for item in result:
-                    email = item[1]
-                    password = item[2]
-                    status = 0
 
-                    updateDb(email, 'fetching', 1)
+                email = result[1]
+                password = result[2]
+                status = 0
 
-                    for folder in FOLDERS:
-                        isFetched = fetching(email, password, folder)
-                        print('[isFetched]', isFetched)
-                        if isFetched:
-                            status = 1
-                        else:
-                            status = 0
+                updateDb(email, 'fetching', 1)
 
-                    updateDb(email, 'fetched', status)
+                for folder in FOLDERS:
+                    isFetched = fetching(email, password, folder)
+                    print('[isFetched]', isFetched)
+                    if isFetched:
+                        status = 1
+                    else:
+                        status = 0
+
+                updateDb(email, 'fetched', status)
             else:
                 print('[=============================== No record found ================================]')
                 time.sleep(5)
