@@ -4,6 +4,7 @@ import socket
 import smtplib
 
 email_address = 'yuyuan@devlandunion.com'
+password = 'utwgrknzmgqtjqvb'
 
 #Step 1: Check email
 #Check using Regex that an email meets minimum requirements, throw an error if not
@@ -19,9 +20,11 @@ if match == None:
 domain_name = email_address.split('@')[1]
 
 #get the MX record for the domain
-records = dns.resolver.query(domain_name, 'MX')
+records = dns.resolver.resolve(domain_name, 'MX')
 mxRecord = records[0].exchange
 mxRecord = str(mxRecord)
+
+print('[mxRecord]', mxRecord)
 
 #Step 3: ping email server
 #check if the email address exists
@@ -30,15 +33,15 @@ mxRecord = str(mxRecord)
 host = socket.gethostname()
 
 # SMTP lib setup (use debug level for full output)
-server = smtplib.SMTP()
+server = smtplib.SMTP('smtp.gmail.com', 587)
 server.set_debuglevel(0)
 
 # SMTP Conversation
-server.connect(mxRecord)
-server.helo(host)
-server.mail('me@domain.com')
+server.mail('diektech@gmail.com')
 code, message = server.rcpt(str(addressToVerify))
 server.quit()
+
+print('[result]', code, message)
 
 # Assume 250 as Success
 if code == 250:
